@@ -42,6 +42,7 @@ public class Core {
 
             long currentTime = Sys.getTime();
             float dt = (currentTime - lastTime) * 1000 / Sys.getTimerResolution();
+            lastTime = currentTime;
 
             Scene currentScene;
 

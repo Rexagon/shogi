@@ -74,8 +74,8 @@ public class Texture {
     }
 
     public void bind(int unit) {
+        GL13.glActiveTexture(GL13.GL_TEXTURE0 + unit);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
-        GL13.glActiveTexture(unit);
     }
 
     public void unbind() {

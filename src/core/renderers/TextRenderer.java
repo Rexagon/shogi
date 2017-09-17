@@ -18,7 +18,6 @@ public class TextRenderer {
         shader.bind();
         shader.setUniform("mask", 0);
         shader.setUniform("windowSize", Display.getWidth(), Display.getHeight());
-        shader.setUniform("color", 1.0f, 0.5f, 0.2f, 1.0f);
         shader.unbind();
     }
 
@@ -32,6 +31,7 @@ public class TextRenderer {
 
         shader.bind();
         shader.setUniform("translation", text.getPosition());
+        shader.setUniform("color", text.getColor());
 
         text.getFont().getTexture().bind(0);
         text.getMesh().draw();

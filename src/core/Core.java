@@ -1,6 +1,7 @@
 package core;
 
 import core.renderers.MeshRenderer;
+import core.renderers.SkyboxRenderer;
 import core.renderers.TextRenderer;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -35,6 +36,7 @@ public class Core {
         // Init renderers
         TextRenderer.init();
         MeshRenderer.init();
+        SkyboxRenderer.init();
         CameraController.init();
     }
 

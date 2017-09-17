@@ -5,38 +5,78 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class Transformable {
     protected Matrix4f transformation = new Matrix4f();
+    protected Matrix4f translationMatrix = new Matrix4f();
+    protected Matrix4f rotationMatrix = new Matrix4f();
+    protected Matrix4f scaleMatrix = new Matrix4f();
+
     protected Vector3f position = new Vector3f(0, 0, 0);
     protected Vector3f rotation = new Vector3f(0, 0, 0);
     protected Vector3f scale = new Vector3f(1, 1, 1);
-    protected boolean wasChanged = true;
+
+    protected boolean positionChanged = true;
+    protected boolean rotationChanged = true;
+    protected boolean scaleChanged = true;
 
     public Matrix4f getTransformation() {
-        if (wasChanged) {
-            Matrix4f translation = (new Matrix4f()).translate(position);
-            Matrix4f rotation = new Matrix4f();
-            rotation.rotate(this.rotation.x, new Vector3f(1, 0 ,0));
-            rotation.rotate(this.rotation.y, new Vector3f(0, 1 ,0));
-            rotation.rotate(this.rotation.z, new Vector3f(0, 0 ,1));
-            Matrix4f scale = (new Matrix4f()).scale(this.scale);
-
+        if (positionChanged || rotationChanged || scaleChanged) {
             transformation.setIdentity();
-            Matrix4f.mul(transformation, scale, transformation);
-            Matrix4f.mul(transformation, rotation, transformation);
-            Matrix4f.mul(transformation, translation, transformation);
+            Matrix4f.mul(transformation, getScaleMatrix(), transformation);
+            Matrix4f.mul(transformation, getRotationMatrix(), transformation);
+            Matrix4f.mul(transformation, getTranslationMatrix(), transformation);
         }
 
         return transformation;
     }
 
+    public Matrix4f getTranslationMatrix() {
+        if (positionChanged) {
+            translationMatrix.setIdentity();
+            translationMatrix.translate(position);
+            positionChanged = false;
+        }
+        return translationMatrix;
+    }
+
+    public Matrix4f getRotationMatrix() {
+        if (rotationChanged) {
+            rotationMatrix.setIdentity();
+            rotationMatrix.rotate(this.rotation.x, new Vector3f(1, 0, 0));
+            rotationMatrix.rotate(this.rotation.y, new Vector3f(0, 1, 0));
+            rotationMatrix.rotate(this.rotation.z, new Vector3f(0, 0, 1));
+            rotationChanged = false;
+        }
+        return rotationMatrix;
+    }
+
+    public Matrix4f getScaleMatrix() {
+        if (scaleChanged) {
+            scaleMatrix.setIdentity();
+            scaleMatrix.scale(scale);
+            scaleChanged = false;
+        }
+        return scaleMatrix;
+    }
+
+    public void updatePosition() {
+        this.positionChanged = true;
+    }
+
+    public void updateRotation() {
+        this.rotationChanged = true;
+    }
+
+    public void updateScale() {
+        this.scaleChanged = true;
+    }
 
     public void setPosition(float x, float y, float z) {
         this.position = new Vector3f(x, y, z);
-        wasChanged = true;
+        positionChanged = true;
     }
 
     public void setPosition(Vector3f position) {
         this.position = position;
-        wasChanged = true;
+        positionChanged = true;
     }
 
     public void move(float x, float y, float z) {
@@ -54,12 +94,12 @@ public class Transformable {
 
     public void setRotation(float x, float y, float z) {
         this.rotation = new Vector3f(x, y, z);
-        wasChanged = true;
+        rotationChanged = true;
     }
 
     public void setRotation(Vector3f eulerAngles) {
         this.rotation = eulerAngles;
-        wasChanged = true;
+        rotationChanged = true;
     }
 
     public void rotate(float x, float y, float z) {
@@ -77,36 +117,36 @@ public class Transformable {
 
     public void setScale(float s) {
         this.scale = new Vector3f(s, s, s);
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public void setScale(float x, float y, float z) {
         this.scale = new Vector3f(x, y, z);
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public void setScale(Vector3f scale) {
         this.scale = scale;
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public void scale(float s) {
         this.scale.scale(s);
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public void scale(float x, float y, float z) {
         this.scale.x *= x;
         this.scale.y *= y;
         this.scale.z *= z;
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public void scale(Vector3f s) {
         this.scale.x *= s.x;
         this.scale.y *= s.y;
         this.scale.z *= s.z;
-        wasChanged = true;
+        scaleChanged = true;
     }
 
     public Vector3f getScale() {

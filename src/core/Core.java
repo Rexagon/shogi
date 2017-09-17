@@ -1,14 +1,12 @@
 package core;
 
+import core.renderers.MeshRenderer;
+import core.renderers.TextRenderer;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.PixelFormat;
-import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.opengl.*;
 
-import java.util.Stack;
+import java.io.IOException;
 
 public class Core {
     private static boolean isInitialized = false;
@@ -17,13 +15,40 @@ public class Core {
     /**
      * Creates window, loads managers and do some other stuff
      */
-    public static void init() throws LWJGLException {
+    public static void init() throws LWJGLException, IOException {
         if (isInitialized || isRunning) return;
 
         Display.setTitle("Shogi");
         Display.setDisplayMode(new DisplayMode(1024, 768));
-        Display.create();
+
+        PixelFormat format = new PixelFormat(32, 0, 24, 8, 4);
+        Display.create(format);
+
         Display.setVSyncEnabled(true);
+        Display.setResizable(true);
+
+        // Opengl initialization
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glCullFace(GL11.GL_BACK);
+        GL11.glEnable(GL11.GL_CULL_FACE);
+
+        // Init renderers
+        TextRenderer.init();
+        MeshRenderer.init();
+        CameraController.init();
+    }
+
+    /**
+     * Cleans every manager
+     */
+    private static void close() {
+        isRunning = false;
+        isInitialized = false;
+
+        SceneManager.close();
+        TextRenderer.close();
+
+        Display.destroy();
     }
 
     /**
@@ -41,7 +66,7 @@ public class Core {
             }
 
             long currentTime = Sys.getTime();
-            float dt = (currentTime - lastTime) * 1000 / Sys.getTimerResolution();
+            float dt = (float)(currentTime - lastTime) / Sys.getTimerResolution();
             lastTime = currentTime;
 
             Scene currentScene;
@@ -57,7 +82,7 @@ public class Core {
             Display.update();
         }
 
-        cleanup();
+        close();
     }
 
     /**
@@ -74,26 +99,17 @@ public class Core {
         }
 
         if (Display.wasResized()) {
-            Vector2f windowSize = new Vector2f(Display.getWidth(), Display.getHeight());
             if (SceneManager.hasScenes()) {
-                SceneManager.getCurrentScene().onResize(windowSize);
+                // Resize all renderers
+                TextRenderer.resize(Display.getWidth(), Display.getHeight());
+                CameraController.resize(Display.getWidth(), Display.getHeight());
+
+                SceneManager.getCurrentScene().onResize(Display.getWidth(), Display.getHeight());
             }
 
             Display.processMessages();
         }
 
         //TODO: find way to handle focus lost/gain
-    }
-
-    /**
-     * Cleans every manager
-     */
-    private static void cleanup() {
-        isRunning = false;
-        isInitialized = false;
-
-        //TODO: add other cleanups
-
-        Display.destroy();
     }
 }

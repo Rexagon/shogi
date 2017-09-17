@@ -1,11 +1,14 @@
 package core;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import org.lwjgl.util.vector.*;
 
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,13 @@ public class Shader {
         for (int program : programs) {
             GL20.glDeleteShader(program);
         }
+    }
+
+    public void loadFromFile(String vertexShaderFile, String fragmentShaderFile) throws IOException {
+        String vertexShaderSource = new String(Files.readAllBytes(Paths.get("shaders/" + vertexShaderFile)));
+        String fragmentShaderSource = new String(Files.readAllBytes(Paths.get("shaders/" + fragmentShaderFile)));
+
+        loadFromString(vertexShaderSource, fragmentShaderSource);
     }
 
     public void loadFromString(String vertexShaderSource, String fragmentShaderSource) {
@@ -90,6 +100,13 @@ public class Shader {
 
     public void setUniform(String name, Vector4f data) {
         GL20.glUniform4f(getUniformLocation(name), data.x, data.y, data.z, data.w);
+    }
+
+    public void setUniform(String name, Matrix4f data) {
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+        data.store(buffer);
+        buffer.flip();
+        GL20.glUniformMatrix4(getUniformLocation(name), false, buffer);
     }
 
     //TODO: create setUniformsArray for all types

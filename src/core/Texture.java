@@ -15,6 +15,10 @@ public class Texture {
     private int width;
     private int height;
 
+    public Texture() {
+        glId = GL11.glGenTextures();
+    }
+
     public void close() {
         GL11.glDeleteTextures(glId);
     }
@@ -23,11 +27,25 @@ public class Texture {
         return glId;
     }
 
-    public boolean loadFromFile(String filename) {
-        ByteBuffer buf;
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public Vector2f getSize() {
+        return new Vector2f(width, height);
+    }
+
+    public void loadFromFile(String filename) {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
 
         try {
-            InputStream in = new FileInputStream(filename);
+            ByteBuffer buf;
+
+            InputStream in = new FileInputStream("textures/" + filename);
             PNGDecoder decoder = new PNGDecoder(in);
 
             width = decoder.getWidth();
@@ -37,28 +55,18 @@ public class Texture {
             decoder.decode(buf, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
             buf.flip();
 
-            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height,
-                    0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buf);
 
             in.close();
-
-            //TODO: move it to generateMipmap function
-            GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-
-            //TODO: move it to setWrap function
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-
-            //TODO: move it to setFilter function
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
 
-        return true;
+        setWrapping(GL11.GL_REPEAT, GL11.GL_REPEAT);
+        setFlitering(GL11.GL_NEAREST, GL11.GL_LINEAR);
+
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
     }
 
     public void bind() {
@@ -68,5 +76,29 @@ public class Texture {
     public void bind(int unit) {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
         GL13.glActiveTexture(unit);
+    }
+
+    public void unbind() {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+    }
+
+    public void generateMipmap() {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+    }
+
+    public void setWrapping(int wrappingS, int wrappingT) {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, wrappingS);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, wrappingT);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+    }
+
+    public void setFlitering(int nearFilter, int farFilter) {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, glId);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, nearFilter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, farFilter);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
     }
 }

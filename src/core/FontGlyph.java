@@ -1,42 +1,42 @@
 package core;
 
+import org.lwjgl.util.vector.Vector2f;
+import org.lwjgl.util.vector.Vector3f;
+
 import java.awt.*;
 
 public class FontGlyph {
-    private float advance;
-    private Rect bounds;
+    private int id;
     private Rect textureRect;
+    private float advance;
+    private Vector2f offset;
+    private Vector2f size;
 
-    public FontGlyph() {
-        this.advance = 0;
-    }
-
-    public FontGlyph(Rect bounds, Rect textureRect) {
-        this.bounds = bounds;
+    public FontGlyph(int id, Rect textureRect, float advance, Vector2f offset, Vector2f size) {
+        this.id = id;
         this.textureRect = textureRect;
+        this.advance = advance;
+        this.offset = offset;
+        this.size = size;
     }
 
-    public void setAdvance(float advance) {
-        this.advance = advance;
+    public int getId() {
+        return id;
+    }
+
+    public Rect getTextureRect() {
+        return textureRect;
     }
 
     public float getAdvance() {
         return advance;
     }
 
-    public void setBounds(Rect bounds) {
-        this.bounds = bounds;
+    public Vector2f getOffset() {
+        return offset;
     }
 
-    public Rect getBounds() {
-        return bounds;
-    }
-
-    public void setTextureRect(Rect textureRect) {
-        this.textureRect = textureRect;
-    }
-
-    public Rect getTextureRect() {
-        return textureRect;
+    public Vector2f getSize() {
+        return size;
     }
 }

@@ -6,6 +6,11 @@ public class Rect {
     private Vector2f position;
     private Vector2f size;
 
+    public Rect() {
+        this.position = new Vector2f(0, 0);
+        this.size = new Vector2f(0, 0);
+    }
+
     public Rect(Vector2f position, Vector2f size) {
         this.position = position;
         this.size = size;
@@ -13,7 +18,7 @@ public class Rect {
 
     public Rect(float x, float y, float width, float height) {
         this.position = new Vector2f(x, y);
-        this.position = new Vector2f(width, height);
+        this.size = new Vector2f(width, height);
     }
 
     public void setPosition(float x, float y) {

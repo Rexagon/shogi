@@ -10,6 +10,12 @@ import java.util.Stack;
 public class SceneManager {
     private static Stack<Scene> scenes = new Stack<Scene>();
 
+    public static void close() {
+        while (!scenes.empty()) {
+            deleteScene();
+        }
+    }
+
     /**
      * Puts specified scene on top of stack and makes it current
      *

@@ -52,7 +52,8 @@ public abstract class Scene {
     /**
      * Is called when window is resized
      *
-     * @param windowSize is the new size of window
+     * @param width is the new width of window
+     * @param height is the new height of window
      */
-    public void onResize(Vector2f windowSize) {}
+    public void onResize(int width, int height) {}
 }

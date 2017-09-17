@@ -1,7 +1,6 @@
 import core.Core;
 import core.SceneManager;
 import game.MainMenu;
-import org.lwjgl.LWJGLException;
 
 public class Shogi {
     public static void main(String[] args) {

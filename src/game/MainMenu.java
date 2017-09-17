@@ -1,63 +1,71 @@
 package game;
 
-import core.Mesh;
-import core.Scene;
-import core.Shader;
-import org.lwjgl.Sys;
+import core.*;
+import core.renderers.MeshRenderer;
+import core.renderers.TextRenderer;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector2f;
 
 public class MainMenu extends Scene {
-    private Mesh testModel = new Mesh();
-    private Shader testShader = new Shader();
+    private Font font = new Font();
+    private Text text;
+
+    private Mesh figure;
+    private Mesh shogiban;
+    private Mesh table;
 
     @Override
     public void onInit() {
-        float[] positions = {
-                -0.5f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f
-        };
+        font.loadFromFile("font.fnt");
 
-        int[] indices = {
-                0, 1, 2,
-                0, 2, 3
-        };
+        text = new Text(font, "shogi test");
+        text.setPosition(new Vector2f(5, 0));
+        text.setFontSize(16);
 
+        // Loading figure
+        figure = new Mesh();
+        figure.loadFromFile("figure.obj");
 
-        testModel.init(positions, indices);
+        Texture figureTexture = new Texture();
+        figureTexture.loadFromFile("figure.png");
+        figureTexture.generateMipmap();
+        figureTexture.setFlitering(GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR_MIPMAP_LINEAR);
 
-        String vertexShader =
-                "#version 330 core\n" +
-                "layout (location = 0) in vec3 position;\n" +
-                "\n" +
-                "void main()\n" +
-                "{\n" +
-                "    gl_Position = vec4(position.x, position.y, position.z, 1.0);\n" +
-                "}";
+        figure.setDiffuseTexture(figureTexture);
 
-        String fragmentShader =
-                "#version 330 core\n" +
-                "out vec4 FragColor;\n" +
-                "\n" +
-                "void main()\n" +
-                "{\n" +
-                "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n" +
-                "} ";
+        figure.setPosition(0, 1.0f, 0);
+        figure.setRotation(0, 0.5f, 0);
 
-        testShader.loadFromString(vertexShader, fragmentShader);
+        // Loading board
+        shogiban = new Mesh();
+        shogiban.loadFromFile("shogiban.obj");
 
-        testShader.setAttribute(0, "position");
+        Texture shogibanTexture = new Texture();
+        shogibanTexture.loadFromFile("shogiban.png");
+
+        shogiban.setDiffuseTexture(shogibanTexture);
+
+        // Loading table
+        table = new Mesh();
+        table.loadFromFile("table.obj");
+
+        Texture tableTexture = new Texture();
+        tableTexture.loadFromFile("table.png");
+
+        table.setDiffuseTexture(tableTexture);
     }
 
     @Override
     public void onClose() {
-        testModel.close();
-        testShader.close();
+        text.close();
+        font.close();
+        figure.close();
+        table.close();
     }
 
     @Override
     public void onUpdate(float dt) {
+        CameraController.update(dt);
     }
 
     @Override
@@ -65,8 +73,15 @@ public class MainMenu extends Scene {
         GL11.glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-        testShader.bind();
-        testModel.draw();
-        testShader.unbind();
+        MeshRenderer.draw(table);
+        MeshRenderer.draw(shogiban);
+        MeshRenderer.draw(figure);
+
+        TextRenderer.draw(text);
+    }
+
+    @Override
+    public void onResize(int width, int height) {
+        GL11.glViewport(0, 0, width, height);
     }
 }

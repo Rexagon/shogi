@@ -22,6 +22,13 @@ class Vertex {
     public Vector2f textureCoords;
     public Vector3f normal;
 
+    /**
+     * Constructor from position, texture coordinates and normal
+     *
+     * @param position position
+     * @param textureCoords texture coordinates
+     * @param normal normal
+     */
     public Vertex(Vector3f position, Vector2f textureCoords, Vector3f normal) {
         this.position = position;
         this.textureCoords = textureCoords;
@@ -35,10 +42,16 @@ public class Mesh extends Transformable {
     private int indicesCount;
     private Texture diffuseTexture = new Texture();
 
+    /**
+     * Default mesh constructor
+     */
     public Mesh() {
         VAO = GL30.glGenVertexArrays();
     }
 
+    /**
+     * Clears up mesh and texture
+     */
     public void close() {
         GL30.glDeleteVertexArrays(VAO);
 
@@ -49,14 +62,31 @@ public class Mesh extends Transformable {
         diffuseTexture.close();
     }
 
+    /**
+     * Sets diffuse texture
+     *
+     * @param texture diffuse texture
+     */
     public void setDiffuseTexture(Texture texture) {
         this.diffuseTexture = texture;
     }
 
+    /**
+     * Returns diffuse texture
+     *
+     * @return diffuse texture
+     */
     public Texture getDiffuseTexture() {
         return diffuseTexture;
     }
 
+    /**
+     * Initializes mesh from vertices data
+     * Vertex has only position
+     *
+     * @param positions vertex positions
+     * @param indices indices
+     */
     public void init(float[] positions, int[] indices) {
         GL30.glBindVertexArray(VAO);
         initAttribute(0, 3, positions);
@@ -64,6 +94,14 @@ public class Mesh extends Transformable {
         GL30.glBindVertexArray(0);
     }
 
+    /**
+     * Initializes mesh from vertices data
+     * Vertex has position and texture coords
+     *
+     * @param positions vertex positions
+     * @param textureCoords vertex texture coords
+     * @param indices indices
+     */
     public void init(float[] positions, float[] textureCoords, int[] indices) {
         GL30.glBindVertexArray(VAO);
         initAttribute(0, 3, positions);
@@ -72,6 +110,15 @@ public class Mesh extends Transformable {
         GL30.glBindVertexArray(0);
     }
 
+    /**
+     * Initializes mesh from vertex data
+     * Vertex has position, texture coords and normal
+     *
+     * @param positions vertex positions
+     * @param textureCoords vertex texture coords
+     * @param normals vertex normals
+     * @param indices indices
+     */
     public void init(float[] positions, float[] textureCoords, float[] normals, int[] indices) {
         GL30.glBindVertexArray(VAO);
         initAttribute(0, 3, positions);
@@ -81,6 +128,16 @@ public class Mesh extends Transformable {
         GL30.glBindVertexArray(0);
     }
 
+    /**
+     * Initializes mesh from vertex data
+     * Vertex has position, texture coords, normal and tangent
+     *
+     * @param positions vertex positions
+     * @param textureCoords vertex texture coords
+     * @param normals vertex normals
+     * @param tangents vertex tangets
+     * @param indices indices
+     */
     public void init(float[] positions, float[] textureCoords, float[] normals, float[] tangents, int[] indices) {
         GL30.glBindVertexArray(VAO);
         initAttribute(0, 3, positions);
@@ -91,6 +148,11 @@ public class Mesh extends Transformable {
         GL30.glBindVertexArray(0);
     }
 
+    /**
+     * Loads mesh from file
+     *
+     * @param filename .obj file path
+     */
     public void loadFromFile(String filename) {
         List<Vertex> vertices = new ArrayList<Vertex>();
         List<Integer> indicesArray = new ArrayList<Integer>();
@@ -179,6 +241,9 @@ public class Mesh extends Transformable {
         }
     }
 
+    /**
+     * Draws mesh
+     */
     public void draw() {
         GL30.glBindVertexArray(VAO);
 
@@ -197,6 +262,13 @@ public class Mesh extends Transformable {
         GL30.glBindVertexArray(0);
     }
 
+    /**
+     * Initializes attribute data
+     *
+     * @param number attribute number
+     * @param dimensionsCount dimension of attribute element
+     * @param data attribute data
+     */
     private void initAttribute(int number, int dimensionsCount, float[] data) {
         int vbo = GL15.glGenBuffers();
         buffers.add(vbo);
@@ -209,6 +281,11 @@ public class Mesh extends Transformable {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
+    /**
+     * Initializes indices data
+     *
+     * @param data indices data
+     */
     private void initIndices(int[] data) {
         int ebo = GL15.glGenBuffers();
         buffers.add(ebo);
@@ -220,6 +297,12 @@ public class Mesh extends Transformable {
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
+    /**
+     * Creates FloatBuffer from array
+     *
+     * @param data buffer data
+     * @return buffer
+     */
     private FloatBuffer createFloatBuffer(float[] data) {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
         buffer.put(data);
@@ -227,6 +310,12 @@ public class Mesh extends Transformable {
         return buffer;
     }
 
+    /**
+     * Creates IntBuffer from array
+     *
+     * @param data buffer data
+     * @return buffer
+     */
     private IntBuffer createIntBuffer(int[] data) {
         IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
         buffer.put(data);

@@ -10,6 +10,12 @@ import java.io.IOException;
 public class TextRenderer {
     private static Shader shader = new Shader();
 
+    /**
+     * Initializes text renderer.
+     * Loads text shader.
+     *
+     * @throws IOException
+     */
     public static void init() throws IOException {
         shader.loadFromFile("quad.vert", "text.frag");
         shader.setAttribute(0, "vPosition");
@@ -21,10 +27,18 @@ public class TextRenderer {
         shader.unbind();
     }
 
+    /**
+     * Clears up text renderer
+     */
     public static void close() {
         shader.close();
     }
 
+    /**
+     * Draws specified text
+     *
+     * @param text text to draw
+     */
     public static void draw(Text text) {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_CULL_FACE);
@@ -43,6 +57,11 @@ public class TextRenderer {
         GL11.glDisable(GL11.GL_BLEND);
     }
 
+    /**
+     * Updates screen size information
+     * @param width new screen width
+     * @param height new screen height
+     */
     public static void resize(int width, int height) {
         shader.bind();
         shader.setUniform("windowSize", width, height);

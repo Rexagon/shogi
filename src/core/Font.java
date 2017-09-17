@@ -16,6 +16,11 @@ class Parameter {
     private String name;
     private String value;
 
+    /**
+     * Constructs parameter from string
+     *
+     * @param parameter string like param=value
+     */
     public Parameter(String parameter) {
         String[] parts = parameter.split("=");
         if (parts.length == 2) {
@@ -28,18 +33,38 @@ class Parameter {
         }
     }
 
+    /**
+     * Returns if this string has any value
+     *
+     * @return emptiness
+     */
     public boolean isEmpty() {
         return empty;
     }
 
+    /**
+     * Returns parameter name
+     *
+     * @return parameter name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Reinterprets parameter value as int
+     *
+     * @return value
+     */
     public int asInt() {
         return Integer.parseInt(value);
     }
 
+    /**
+     * Reinterprets parameter value as int array
+     *
+     * @return value
+     */
     public int[] asIntArray() {
         String[] numbers = value.split(",");
         int[] result = new int[numbers.length];
@@ -49,6 +74,11 @@ class Parameter {
         return result;
     }
 
+    /**
+     * Reinterprets parameter value as string
+     *
+     * @return value
+     */
     public String asString() {
         return value.replace("\"", "");
     }
@@ -61,31 +91,66 @@ public class Font {
     private Map<Integer, FontGlyph> glyphs = new HashMap<Integer, FontGlyph>();
     private Texture texture = new Texture();
 
+    /**
+     * Clears up font
+     */
     public void close() {
         texture.close();
     }
 
+    /**
+     * Returns font family
+     *
+     * @return font family
+     */
     public String getFontName() {
         return fontName;
     }
 
+    /**
+     * Returns padding of glyph
+     * [left, top, right, bottom]
+     *
+     * @return glyph padding
+     */
     public int[] getGlyphPadding() {
         return glyphPadding;
     }
 
+    /**
+     * Returns font size
+     *
+     * @return font size inf default image
+     */
     public int getFontSize() {
         return fontSize;
     }
 
+    /**
+     * Returns font texture
+     *
+     * @return font texture
+     */
     public Texture getTexture() {
         return texture;
     }
 
+    /**
+     * Returns glyph of ASCII symbol with specified id
+     *
+     * @param id ASCII symbol id
+     * @return glyph
+     */
     public FontGlyph getGlyph(int id) {
         return glyphs.get(id);
     }
 
-    public boolean loadFromFile(String filename) {
+    /**
+     * Loads font from file
+     *
+     * @param filename .fnt file path
+     */
+    public void loadFromFile(String filename) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("fonts/" + filename));
 
@@ -127,10 +192,13 @@ public class Font {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return true;
     }
 
+    /**
+     * Process splitted line which starts with 'info '
+     *
+     * @param parameters list of parameters
+     */
     private void processInfo(String[] parameters) {
         for (String element : parameters) {
             Parameter parameter = new Parameter(element);
@@ -155,9 +223,19 @@ public class Font {
         }
     }
 
+    /**
+     * Process splitted line which starts with 'common '
+     *
+     * @param parameters list of parameters
+     */
     private void processCommon(String[] parameters) {
     }
 
+    /**
+     * Process splitted line which starts with 'page '
+     *
+     * @param parameters list of parameters
+     */
     private void processPage(String[] parameters) {
         for (String element : parameters) {
             Parameter parameter = new Parameter(element);
@@ -174,10 +252,20 @@ public class Font {
         }
     }
 
+    /**
+     * Process splitted line which starts with 'chars '
+     *
+     * @param parameters list of parameters
+     */
     private void processChars(String[] parameters) {
         // there is no needs to know how many chars exists
     }
 
+    /**
+     * Process splitted line which starts with 'char '
+     *
+     * @param parameters list of parameters
+     */
     private void processChar(String[] parameters) {
         int id = 0;
         Vector2f position = new Vector2f();
@@ -235,6 +323,11 @@ public class Font {
         glyphs.put(id, new FontGlyph(id, new Rect(position, texQuad), advance, offset, size));
     }
 
+    /**
+     * Process splitted line which starts with 'kernings '
+     *
+     * @param parameters list of parameters
+     */
     private void processKernings(String[] parameters) {
         //TODO: process kernings
     }

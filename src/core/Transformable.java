@@ -17,6 +17,11 @@ public class Transformable {
     protected boolean rotationChanged = true;
     protected boolean scaleChanged = true;
 
+    /**
+     * Returns transformation
+     *
+     * @return transformation matrix
+     */
     public Matrix4f getTransformation() {
         if (positionChanged || rotationChanged || scaleChanged) {
             transformation.setIdentity();
@@ -28,6 +33,11 @@ public class Transformable {
         return transformation;
     }
 
+    /**
+     * Returns translation
+     *
+     * @return translation matrix
+     */
     public Matrix4f getTranslationMatrix() {
         if (positionChanged) {
             translationMatrix.setIdentity();
@@ -37,6 +47,11 @@ public class Transformable {
         return translationMatrix;
     }
 
+    /**
+     * Returns rotation
+     *
+     * @return rotation matrix
+     */
     public Matrix4f getRotationMatrix() {
         if (rotationChanged) {
             rotationMatrix.setIdentity();
@@ -48,6 +63,11 @@ public class Transformable {
         return rotationMatrix;
     }
 
+    /**
+     * Returns scale
+     *
+     * @return scale matrix
+     */
     public Matrix4f getScaleMatrix() {
         if (scaleChanged) {
             scaleMatrix.setIdentity();
@@ -57,55 +77,116 @@ public class Transformable {
         return scaleMatrix;
     }
 
+    /**
+     * Forces position to be updated
+     */
     public void updatePosition() {
         this.positionChanged = true;
     }
 
+    /**
+     * Forces rotation to be update
+     */
     public void updateRotation() {
         this.rotationChanged = true;
     }
 
+    /**
+     * Forces scale to be updated
+     */
     public void updateScale() {
         this.scaleChanged = true;
     }
 
+    /**
+     * Set position
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void setPosition(float x, float y, float z) {
         this.position = new Vector3f(x, y, z);
         positionChanged = true;
     }
 
+    /**
+     * Set position
+     *
+     * @param position
+     */
     public void setPosition(Vector3f position) {
         this.position = position;
         positionChanged = true;
     }
 
+    /**
+     * Moves object
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void move(float x, float y, float z) {
         setPosition(Vector3f.add(this.position, new Vector3f(x, y, z), null));
     }
 
+    /**
+     * Moves this object
+     *
+     * @param vec movement vector
+     */
     public void move(Vector3f vec) {
         setPosition(Vector3f.add(this.position, vec, null));
     }
 
+    /**
+     * Returns position
+     *
+     * @return position
+     */
     public Vector3f getPosition() {
         return position;
     }
 
-
+    /**
+     * Returns rotation
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void setRotation(float x, float y, float z) {
         this.rotation = new Vector3f(x, y, z);
         rotationChanged = true;
     }
 
+    /**
+     * Returns rotation
+     *
+     * @param eulerAngles
+     */
     public void setRotation(Vector3f eulerAngles) {
         this.rotation = eulerAngles;
         rotationChanged = true;
     }
 
+    /**
+     * Rotates object
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void rotate(float x, float y, float z) {
         setRotation(Vector3f.add(this.rotation, new Vector3f(x, y, z), null));
     }
 
+    /**
+     * Rotates object
+     *
+     * @param eulerAngles
+     */
     public void rotate(Vector3f eulerAngles) {
         setRotation(Vector3f.add(this.rotation, eulerAngles, null));
     }
@@ -114,27 +195,54 @@ public class Transformable {
         return rotation;
     }
 
-
+    /**
+     * Set scale
+     *
+     * @param s
+     */
     public void setScale(float s) {
         this.scale = new Vector3f(s, s, s);
         scaleChanged = true;
     }
 
+    /**
+     * Set scale
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
     public void setScale(float x, float y, float z) {
         this.scale = new Vector3f(x, y, z);
         scaleChanged = true;
     }
 
+    /**
+     * Set scale
+     *
+     * @param scale
+     */
     public void setScale(Vector3f scale) {
         this.scale = scale;
         scaleChanged = true;
     }
 
+    /**
+     * Scales object
+     *
+     * @param s
+     */
     public void scale(float s) {
         this.scale.scale(s);
         scaleChanged = true;
     }
 
+    /**
+     * Scales object
+     * @param x
+     * @param y
+     * @param z
+     */
     public void scale(float x, float y, float z) {
         this.scale.x *= x;
         this.scale.y *= y;
@@ -142,6 +250,11 @@ public class Transformable {
         scaleChanged = true;
     }
 
+    /**
+     * Scales object
+     *
+     * @param s
+     */
     public void scale(Vector3f s) {
         this.scale.x *= s.x;
         this.scale.y *= s.y;
@@ -149,6 +262,11 @@ public class Transformable {
         scaleChanged = true;
     }
 
+    /**
+     * Returns object scale
+     *
+     * @return object scale
+     */
     public Vector3f getScale() {
         return scale;
     }

@@ -11,6 +11,11 @@ import java.io.IOException;
 public class MeshRenderer {
     private static Shader shader = new Shader();
 
+    /**
+     * Initialize mesh renderer. Loads mesh shader
+     *
+     * @throws IOException
+     */
     public static void init() throws IOException {
         shader.loadFromFile("mesh.vert", "mesh.frag");
         shader.setAttribute(0, "vPosition");
@@ -22,10 +27,18 @@ public class MeshRenderer {
         shader.unbind();
     }
 
+    /**
+     * Clears up mesh renderer
+     */
     public static void close() {
         shader.close();
     }
 
+    /**
+     * Draws specified mesh
+     *
+     * @param mesh mesh to draw
+     */
     public static void draw(Mesh mesh) {
         shader.bind();
         shader.setUniform("transformation", mesh.getTransformation());

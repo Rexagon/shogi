@@ -18,6 +18,12 @@ public class SkyboxRenderer {
     private static Mesh cube = new Mesh();
     private static int cubemap;
 
+    /**
+     * Initialize skybox renderer.
+     * Loads shader and creates cube mesh
+     *
+     * @throws IOException
+     */
     public static void init() throws IOException {
         shader.loadFromFile("skybox.vert", "skybox.frag");
         shader.setAttribute(0, "vPosition");
@@ -66,12 +72,18 @@ public class SkyboxRenderer {
         cube.init(positions, indices);
     }
 
+    /**
+     * Clears up
+     */
     public static void close() {
         shader.close();
         cube.close();
         GL11.glDeleteTextures(cubemap);
     }
 
+    /**
+     * Draw skybox
+     */
     public static void draw() {
         shader.bind();
         shader.setUniform("cameraRotation", CameraController.getMainCamera().getRotationMatrix());
@@ -91,6 +103,9 @@ public class SkyboxRenderer {
         shader.unbind();
     }
 
+    /**
+     * Loads cubemap
+     */
     private static void createTexture() {
         cubemap = GL11.glGenTextures();
         bindCubemap();
@@ -111,6 +126,12 @@ public class SkyboxRenderer {
         unbindCubemap();
     }
 
+    /**
+     * Loads cubemap part into binded texture
+     *
+     * @param direction GL_TEXTURE_CUBEMAP_...
+     * @param filename file with texture
+     */
     private static void loadCubemapPart(int direction, String filename) {
         try {
             ByteBuffer buf;
@@ -131,11 +152,17 @@ public class SkyboxRenderer {
         }
     }
 
+    /**
+     * Binds cubemap texture to 0 position
+     */
     private static void bindCubemap() {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, cubemap);
     }
 
+    /**
+     * Unbinds cubemap texture
+     */
     private static void unbindCubemap() {
         GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, 0);
     }

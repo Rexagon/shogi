@@ -2,7 +2,6 @@ package core;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
@@ -11,19 +10,37 @@ public class CameraController {
     private static Vector3f origin = new Vector3f(0, 0, 0);
     private static float distance = 30.0f;
 
+    /**
+     * Initializes main camera
+     */
     public static void init() {
         mainCamera.setPosition(origin.x, origin.y, origin.z + distance);
         rotateCamera(-1.0f, 0);
     }
 
-    public static void setMainCamera(Camera mainCamera) {
-        CameraController.mainCamera = mainCamera;
+    /**
+     * Set specified camera as main camera
+     *
+     * @param camera next main camera
+     */
+    public static void setMainCamera(Camera camera) {
+        CameraController.mainCamera = camera;
     }
 
+    /**
+     * Returns main camera
+     *
+     * @return main camera
+     */
     public static Camera getMainCamera() {
         return mainCamera;
     }
 
+    /**
+     * Updates camera position
+     *
+     * @param dt delta time
+     */
     public static void update(float dt) {
         if (mainCamera == null) {
             return;
@@ -58,10 +75,22 @@ public class CameraController {
         }
     }
 
+    /**
+     * Updates main camera aspect ration
+     *
+     * @param width new window width
+     * @param height new window height
+     */
     public static void resize(int width, int height) {
         mainCamera.updateAspectRatio(width, height);
     }
 
+    /**
+     * Rotates camera around origin
+     *
+     * @param rotationX delta roll angle
+     * @param rotationY delta pitch angle
+     */
     public static void rotateCamera(float rotationX, float rotationY) {
         float targetRoll = mainCamera.getRotation().x + rotationX;
         if (targetRoll > -0.05f) {

@@ -19,11 +19,13 @@ public class Core {
     public static void init() throws LWJGLException, IOException {
         if (isInitialized || isRunning) return;
 
+        ContextAttribs contextAtrributes = new ContextAttribs(3, 3);
+
         Display.setTitle("Shogi");
         Display.setDisplayMode(new DisplayMode(1024, 768));
 
         PixelFormat format = new PixelFormat(32, 0, 24, 8, 4);
-        Display.create(format);
+        Display.create(format, contextAtrributes);
 
         Display.setVSyncEnabled(true);
         Display.setResizable(true);

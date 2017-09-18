@@ -1,5 +1,6 @@
-package core;
+package gui;
 
+import gui.Rect;
 import org.lwjgl.util.vector.Vector2f;
 
 public class FontGlyph {
@@ -64,7 +65,7 @@ public class FontGlyph {
 
     /**
      * Returns glyph size
-     * 
+     *
      * @return size
      */
     public Vector2f getSize() {

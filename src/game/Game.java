@@ -4,18 +4,21 @@ import core.*;
 import core.renderers.MeshRenderer;
 import core.renderers.SkyboxRenderer;
 import core.renderers.TextRenderer;
+import core.resources.Font;
+import core.resources.Mesh;
+import gui.Text;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
 
-public class MainMenu extends Scene {
+public class Game extends Scene {
     private Font font = new Font();
     private Text text;
 
-    private Mesh figure;
-    private Mesh shogiban;
+    private Board board;
     private Mesh table;
     private Mesh island;
+
 
     @Override
     public void onInit() {
@@ -26,55 +29,26 @@ public class MainMenu extends Scene {
         text.setFontSize(20);
         text.setColor(new Vector4f(0, 0, 0, 1));
 
-        // Loading figure
-        figure = new Mesh();
-        figure.loadFromFile("figure.obj");
-
-        Texture figureTexture = new Texture();
-        figureTexture.loadFromFile("figure.png");
-        figureTexture.generateMipmap();
-        figureTexture.setFlitering(GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR_MIPMAP_LINEAR);
-
-        figure.setDiffuseTexture(figureTexture);
-
-        figure.setPosition(0, 1.0f, 0);
-        figure.setRotation(0, 0.5f, 0);
-
-        // Loading board
-        shogiban = new Mesh();
-        shogiban.loadFromFile("shogiban.obj");
-
-        Texture shogibanTexture = new Texture();
-        shogibanTexture.loadFromFile("shogiban.png");
-
-        shogiban.setDiffuseTexture(shogibanTexture);
-
         // Loading table
         table = new Mesh();
         table.loadFromFile("table.obj");
-
-        Texture tableTexture = new Texture();
-        tableTexture.loadFromFile("table.png");
-
-        table.setDiffuseTexture(tableTexture);
+        table.getDiffuseTexture().loadFromFile("table.png");
 
         // Loading island
         island = new Mesh();
         island.loadFromFile("island.obj");
-
-        Texture islandTexture = new Texture();
-        islandTexture.loadFromFile("island.png");
-
-        island.setDiffuseTexture(islandTexture);
+        island.getDiffuseTexture().loadFromFile("island.png");
 
         island.setPosition(0, -10, 0);
+
+        board = new Board();
     }
 
     @Override
     public void onClose() {
         text.close();
         font.close();
-        figure.close();
+        board.close();
         table.close();
         island.close();
     }
@@ -91,10 +65,9 @@ public class MainMenu extends Scene {
 
         SkyboxRenderer.draw();
 
-        MeshRenderer.draw(table);
-        MeshRenderer.draw(shogiban);
-        MeshRenderer.draw(figure);
         MeshRenderer.draw(island);
+        MeshRenderer.draw(table);
+        board.draw(dt);
 
         TextRenderer.draw(text);
     }

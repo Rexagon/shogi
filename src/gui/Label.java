@@ -1,4 +1,5 @@
 package gui;
 
-public class Label {
+public class Label extends Rect {
+
 }

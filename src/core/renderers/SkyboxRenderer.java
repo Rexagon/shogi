@@ -1,8 +1,8 @@
 package core.renderers;
 
 import core.CameraController;
-import core.Mesh;
-import core.Shader;
+import core.resources.Mesh;
+import core.resources.Shader;
 import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;

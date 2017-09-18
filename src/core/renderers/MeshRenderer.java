@@ -1,9 +1,8 @@
 package core.renderers;
 
-import core.Camera;
 import core.CameraController;
-import core.Mesh;
-import core.Shader;
+import core.resources.Mesh;
+import core.resources.Shader;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;

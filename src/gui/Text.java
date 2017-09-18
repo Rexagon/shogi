@@ -1,5 +1,7 @@
-package core;
+package gui;
 
+import core.resources.Font;
+import core.resources.Mesh;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
 

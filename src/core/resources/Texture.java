@@ -1,4 +1,4 @@
-package core;
+package core.resources;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.opengl.*;

@@ -1,15 +1,14 @@
-package core;
+package core.resources;
 
-import org.lwjgl.Sys;
-import org.lwjgl.opengl.GL11;
+import gui.FontGlyph;
+import gui.Rect;
 import org.lwjgl.util.vector.Vector2f;
-import org.lwjgl.util.vector.Vector3f;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 
 class Parameter {
     private boolean empty = true;

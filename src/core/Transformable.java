@@ -25,9 +25,9 @@ public class Transformable {
     public Matrix4f getTransformation() {
         if (positionChanged || rotationChanged || scaleChanged) {
             transformation.setIdentity();
-            Matrix4f.mul(transformation, getScaleMatrix(), transformation);
-            Matrix4f.mul(transformation, getRotationMatrix(), transformation);
             Matrix4f.mul(transformation, getTranslationMatrix(), transformation);
+            Matrix4f.mul(transformation, getRotationMatrix(), transformation);
+            Matrix4f.mul(transformation, getScaleMatrix(), transformation);
         }
 
         return transformation;

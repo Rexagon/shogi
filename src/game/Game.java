@@ -33,6 +33,7 @@ public class Game extends Scene {
         table = new Mesh();
         table.loadFromFile("table.obj");
         table.getDiffuseTexture().loadFromFile("table.png");
+        table.getDiffuseTexture().setFlitering(GL11.GL_LINEAR, GL11.GL_LINEAR);
 
         // Loading island
         island = new Mesh();
@@ -42,6 +43,7 @@ public class Game extends Scene {
         island.setPosition(0, -10, 0);
 
         board = new Board();
+        board.initField();
     }
 
     @Override

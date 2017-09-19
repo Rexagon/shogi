@@ -11,5 +11,5 @@ void main() {
 	float light = clamp(dot(normalize(fNormal), normalize(vec3(-1, 1, -1))), 0, 2);
 	vec4 ambient = vec4(0.4f, 0.4f, 0.45f, 1.0f);
 
-	gl_FragColor = ambient * color + light * color;
+	gl_FragColor = clamp(ambient * color + light * color, 0, 1);
 }

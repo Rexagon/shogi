@@ -37,6 +37,15 @@ public class CameraController {
     }
 
     /**
+     * Returns distance from camera to origin
+     *
+     * @return distance
+     */
+    public static float getDistance() {
+        return distance;
+    }
+
+    /**
      * Updates camera position
      *
      * @param dt delta time

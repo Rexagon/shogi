@@ -64,6 +64,7 @@ public class Core {
         long lastTime = Sys.getTime();
         while (true) {
             handleEvents();
+            Input.update();
 
             if (!isRunning) {
                 break;

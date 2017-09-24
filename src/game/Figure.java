@@ -7,23 +7,18 @@ import java.util.Objects;
 class Movement {
     int directionX;
     int directionY;
-    int length;
+    boolean finite;
 
     Movement(int directionX, int directionY) {
         this.directionX = directionX;
         this.directionY = directionY;
-        length = 9;
+        finite = false;
     }
 
     Movement(int directionX, int directionY, boolean finite) {
         this.directionX = directionX;
         this.directionY = directionY;
-        if (finite) {
-            length = 1;
-        }
-        else {
-            length = 9;
-        }
+        this.finite = finite;
     }
 }
 
@@ -115,7 +110,7 @@ public class Figure {
         });
 
         movements.put(Type.PAWN, new Movement[] {
-                new Movement(0, 1)
+                new Movement(0, 1, true)
         });
 
         // Inverted types
@@ -155,6 +150,7 @@ public class Figure {
     private Color color;
     private int positionX = 0;
     private int positionY = 0;
+    private boolean highlighted = false;
 
     Figure(Type type, Color color) {
         this.type = type;
@@ -219,6 +215,14 @@ public class Figure {
         return type == Type.ROOK_INVERTED || type == Type.BISHOP_INVERTED ||
                 type == Type.SILVER_GENERAL_INVERTED || type == Type.KNIGHT_INVERTED ||
                 type == Type.LANCE_INVERTED || type == Type.PAWN_INVERTED;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+    }
+
+    public boolean isHighlighted() {
+        return highlighted;
     }
 
     public Movement[] getPossibleMoves() {

@@ -34,11 +34,25 @@ public class MeshRenderer {
     }
 
     /**
-     * Draws specified mesh
+     * Draws specified mesh with default shader
      *
      * @param mesh mesh to draw
      */
     public static void draw(Mesh mesh) {
+        draw(mesh, shader);
+    }
+
+    /**
+     * Draws specified mesh with custom shader
+     *
+     * @param mesh mesh to draw
+     * @param shader custom mesh shader
+     */
+    public static void draw(Mesh mesh, Shader shader) {
+        if (shader == null) {
+            return;
+        }
+
         shader.bind();
         shader.setUniform("transformation", mesh.getTransformation());
 

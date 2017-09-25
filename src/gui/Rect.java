@@ -106,7 +106,7 @@ public class Rect {
         float minY = Math.min(position.y, position.y + size.y);
         float maxY = Math.max(position.y, position.y + size.y);
 
-        return (x >= minX) && (x < maxX) && (y >= minY) && (y < maxY);
+        return (x >= minX) && (x <= maxX) && (y >= minY) && (y <= maxY);
     }
 
     /**
@@ -141,6 +141,6 @@ public class Rect {
         float interRight  = Math.min(maxX1, maxX2);
         float interBottom = Math.min(maxY1, maxY2);
 
-        return (interLeft < interRight) && (interTop < interBottom);
+        return (interLeft <= interRight) && (interTop <= interBottom);
     }
 }

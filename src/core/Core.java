@@ -1,5 +1,6 @@
 package core;
 
+import core.renderers.WidgetRenderer;
 import core.renderers.MeshRenderer;
 import core.renderers.SkyboxRenderer;
 import core.renderers.TextRenderer;
@@ -39,6 +40,8 @@ public class Core {
         TextRenderer.init();
         MeshRenderer.init();
         SkyboxRenderer.init();
+        WidgetRenderer.init();
+
         CameraController.init();
     }
 
@@ -51,6 +54,8 @@ public class Core {
 
         SceneManager.close();
         TextRenderer.close();
+        SkyboxRenderer.close();
+        WidgetRenderer.close();
 
         Display.destroy();
     }
@@ -66,7 +71,7 @@ public class Core {
             handleEvents();
             Input.update();
 
-            if (!isRunning) {
+            if (!isRunning || !SceneManager.hasScenes()) {
                 break;
             }
 
@@ -105,8 +110,12 @@ public class Core {
 
         if (Display.wasResized()) {
             if (SceneManager.hasScenes()) {
+                GL11.glViewport(0, 0, Display.getWidth(), Display.getHeight());
+
                 // Resize all renderers
+                WidgetRenderer.resize(Display.getWidth(), Display.getHeight());
                 TextRenderer.resize(Display.getWidth(), Display.getHeight());
+
                 CameraController.resize(Display.getWidth(), Display.getHeight());
 
                 SceneManager.getCurrentScene().onResize(Display.getWidth(), Display.getHeight());

@@ -6,30 +6,25 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector4f;
 
 public class Text {
-    private Font font;
     private String text = "";
-    private Mesh mesh = new Mesh();
+    private Mesh mesh;
+    private Font font;
     private Vector4f color = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
     private int fontSize = 40;
     private Vector2f position = new Vector2f(0, 0);
+    private Vector2f topLeftPoint = new Vector2f(0, 0);
+    private Vector2f bottomRightPoint = new Vector2f(0, 0);
+    private boolean textChanged = true;
 
-    /**
-     * Text constructor
-     *
-     * @param font font of text
-     */
-    public Text(Font font) {
-        this.font = font;
+    public Text() {
     }
 
     /**
      * Text constructor
      *
-     * @param font font of text
      * @param text text string
      */
-    public Text(Font font, String text) {
-        this.font = font;
+    public Text(String text) {
         setText(text);
     }
 
@@ -37,26 +32,9 @@ public class Text {
      * Clears up font and text mesh
      */
     public void close() {
-        font.close();
-        mesh.close();
-    }
-
-    /**
-     * Set text font
-     *
-     * @param font text font
-     */
-    public void setFont(Font font) {
-        this.font = font;
-    }
-
-    /**
-     * Returns text font
-     *
-     * @return text font
-     */
-    public Font getFont() {
-        return font;
+        if (mesh != null) {
+            mesh.close();
+        }
     }
 
     /**
@@ -66,51 +44,7 @@ public class Text {
      */
     public void setText(String text) {
         this.text = text;
-
-        int size = 0;
-        for (int i = 0; i < text.length(); ++i) {
-            int c = text.charAt(i);
-            if (c != ' ' && c != '\n') {
-                size++;
-            }
-        }
-
-        float[] positions = new float[size * 12];
-        float[] textureCoords = new float[size * 8];
-        int[] indices = new int[size * 6];
-
-        float xadvance = 0;
-        float yadvance = 0;
-        int glyphNumber = 0;
-        for (int i = 0; i < text.length(); ++i) {
-            char c = text.charAt(i);
-            if (c == '\n') {
-                yadvance -= fontSize * 1.2f;
-                xadvance = 0;
-                continue;
-            }
-
-            FontGlyph glyph = font.getGlyph(c);
-            if (glyph == null) {
-                continue;
-            }
-            if (c != ' ') {
-                float[] glyphPositions = generatePositions(glyph, xadvance, yadvance);
-                float[] glyphTextureCoords = generateTextureCoords(glyph);
-                int[] glyphIndices = generateIndices(glyphNumber);
-
-                System.arraycopy(glyphPositions, 0, positions, glyphNumber * 12, glyphPositions.length);
-                System.arraycopy(glyphTextureCoords, 0, textureCoords, glyphNumber * 8, glyphTextureCoords.length);
-                System.arraycopy(glyphIndices, 0, indices, glyphNumber * 6, glyphIndices.length);
-                glyphNumber++;
-            }
-
-            xadvance += glyph.getAdvance() * fontSize;
-        }
-
-        mesh.close();
-        mesh = new Mesh();
-        mesh.init(positions, textureCoords, indices);
+        textChanged = true;
     }
 
     /**
@@ -123,11 +57,36 @@ public class Text {
     }
 
     /**
+     * Set font, from which text will be generated
+     *
+     * @param font
+     */
+    public void setFont(Font font) {
+        if (this.font != font) {
+            this.font = font;
+            textChanged = true;
+        }
+    }
+
+    /**
+     * Returns font of this text (can be null)
+     *
+     * @return font
+     */
+    public Font getFont() {
+        return font;
+    }
+
+    /**
      * Returns text mesh
      *
      * @return mesh
      */
     public Mesh getMesh() {
+        if (textChanged) {
+            updateMesh();
+            textChanged = false;
+        }
         return mesh;
     }
 
@@ -155,7 +114,7 @@ public class Text {
      */
     public void setFontSize(int fontSize) {
         this.fontSize = fontSize;
-        setText(text);
+        textChanged = true;
     }
 
     /**
@@ -186,6 +145,77 @@ public class Text {
     }
 
     /**
+     * Returns mesh aabb size
+     *
+     * @return size
+     */
+    public Vector2f getSize() {
+        return Vector2f.sub(bottomRightPoint, topLeftPoint, null);
+    }
+
+    /**
+     * Recreates text mesh. Font must be set before
+     */
+    private void updateMesh() {
+        if (font == null) {
+            return;
+        }
+
+        topLeftPoint = new Vector2f(0, 0);
+        bottomRightPoint = new Vector2f(0, 0);
+
+        int size = 0;
+        for (int i = 0; i < text.length(); ++i) {
+            int c = text.charAt(i);
+            if (c != ' ' && c != '\n') {
+                size++;
+            }
+        }
+
+        float[] positions = new float[size * 12];
+        float[] textureCoords = new float[size * 8];
+        int[] indices = new int[size * 6];
+
+        float xadvance = 0;
+        float yadvance = 0;
+        int glyphNumber = 0;
+        for (int i = 0; i < text.length(); ++i) {
+            char c = text.charAt(i);
+            if (c == '\n') {
+                yadvance -= fontSize * 1.2f;
+                xadvance = 0;
+                continue;
+            }
+
+            FontGlyph glyph = font.getGlyph(c);
+            if (glyph == null) {
+                continue;
+            }
+            if (c == ' ') {
+                bottomRightPoint.x = Math.max(bottomRightPoint.x, xadvance);
+            }
+            else {
+                float[] glyphPositions = generatePositions(glyph, xadvance, yadvance);
+                float[] glyphTextureCoords = generateTextureCoords(glyph);
+                int[] glyphIndices = generateIndices(glyphNumber);
+
+                System.arraycopy(glyphPositions, 0, positions, glyphNumber * 12, glyphPositions.length);
+                System.arraycopy(glyphTextureCoords, 0, textureCoords, glyphNumber * 8, glyphTextureCoords.length);
+                System.arraycopy(glyphIndices, 0, indices, glyphNumber * 6, glyphIndices.length);
+                glyphNumber++;
+            }
+
+            xadvance += glyph.getAdvance() * fontSize;
+        }
+
+        if (mesh != null) {
+            mesh.close();
+        }
+        mesh = new Mesh();
+        mesh.init(positions, textureCoords, indices);
+    }
+
+    /**
      * Creates glyph vertices positions
      *
      * @param glyph glyph
@@ -195,13 +225,18 @@ public class Text {
      */
     private float[] generatePositions(FontGlyph glyph, float xadvance, float yadvance) {
         Vector2f size = glyph.getTextureRect().getSize();
-        float aspect = size.x / size.y;
 
         float width = fontSize * glyph.getSize().x;
         float height = fontSize * glyph.getSize().y;
 
         float x = xadvance + glyph.getOffset().x * fontSize;
         float y = yadvance + glyph.getOffset().y * fontSize;
+
+        topLeftPoint.x = Math.min(topLeftPoint.x, x);
+        topLeftPoint.y = Math.min(topLeftPoint.y, y);
+
+        bottomRightPoint.x = Math.max(bottomRightPoint.x, x + width);
+        bottomRightPoint.y = Math.max(bottomRightPoint.y, y + height);
 
         return new float[]{
                 x, y, 0.0f,

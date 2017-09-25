@@ -48,6 +48,7 @@ public class Board {
     private int hoveredX;
     private int hoveredY;
     private Figure selectedFigure;
+    private Figure.Color currentTerm = Figure.Color.BLACK;
 
     public Board() throws IOException {
         highlightShader.loadFromFile("highlight.vert", "highlight.frag");
@@ -132,32 +133,23 @@ public class Board {
     public void draw(float dt) {
         MeshRenderer.draw(boardMesh);
 
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        GL11.glStencilFunc(GL11.GL_NOTEQUAL, 1, 0xFF);
+        GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE);
+
+        GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF);
+
         for (int y = 0; y < 9; ++y) {
             for (int x = 0; x < 9; ++x) {
                 Figure figure = field[x][y];
-                if (field[x][y] != null) {
+                if (figure != null) {
                     prepareMesh(figure);
 
                     if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
-                        highlightShader.bind();
-
-                        if (figure == hoveredFigure) {
-                            highlightShader.setUniform("color", 0.0f, 1.0f, 0.0f, 0.4f);
-                        }
-                        else if (figure == selectedFigure) {
-                            highlightShader.setUniform("color", 0.3f, 1.0f, 0.0f, 1.0f);
-                        }
-                        else if (figure.isHighlighted()) {
-                            highlightShader.setUniform("color", 1.0f, 0.2f, 0.0f, 0.4f);
-                        }
-
-                        highlightShader.unbind();
-
-                        GL11.glEnable(GL11.GL_BLEND);
-                        GL11.glDepthMask(false);
-                        MeshRenderer.draw(figureMesh, highlightShader);
-                        GL11.glDepthMask(true);
-                        GL11.glDisable(GL11.GL_BLEND);
+                        GL11.glStencilMask(0xFF);
+                    }
+                    else {
+                        GL11.glStencilMask(0x00);
                     }
 
                     MeshRenderer.draw(figureMesh);
@@ -182,6 +174,42 @@ public class Board {
                 }
             }
         }
+
+        GL11.glStencilFunc(GL11.GL_NOTEQUAL, 1, 0xFF);
+        GL11.glStencilMask(0x00);
+
+        for (int y = 0; y < 9; ++y) {
+            for (int x = 0; x < 9; ++x) {
+                Figure figure = field[x][y];
+                if (figure != null) {
+                    if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
+                        prepareMesh(figure);
+                        highlightShader.bind();
+
+                        if (figure == hoveredFigure) {
+                            highlightShader.setUniform("color", 0.0f, 1.0f, 0.0f, 0.4f);
+                        }
+                        else if (figure == selectedFigure) {
+                            highlightShader.setUniform("color", 0.3f, 1.0f, 0.0f, 1.0f);
+                        }
+                        else if (figure.isHighlighted()) {
+                            highlightShader.setUniform("color", 1.0f, 0.2f, 0.0f, 0.4f);
+                        }
+
+                        highlightShader.unbind();
+
+                        GL11.glEnable(GL11.GL_BLEND);
+                        GL11.glDepthMask(false);
+                        MeshRenderer.draw(figureMesh, highlightShader);
+                        GL11.glDepthMask(true);
+                        GL11.glDisable(GL11.GL_BLEND);
+                    }
+                }
+            }
+        }
+
+        GL11.glStencilMask(0xFF);
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
     }
 
     public void setFigure(int x, int y, Figure figure) {
@@ -203,7 +231,7 @@ public class Board {
         }
     }
 
-    public void handleHover(Vector3f coords) {
+    public void handleMouseMove(Vector3f coords) {
         int x = 8 - (int)Math.ceil((double)(coords.x - cellSize.x / 2.0f - figuresOffset.x) / cellSize.x);
         int y = (int)Math.ceil((double)(coords.z - cellSize.y / 2.0f - figuresOffset.z) / cellSize.y);
 
@@ -212,7 +240,9 @@ public class Board {
         hoveredY = y;
     }
 
-    public void handleClick(Vector3f coords) {
+    public void handleMouseClick(Vector3f coords, Figure.Color color) {
+        if (currentTerm != color) return;
+
         int x = 8 - (int) Math.ceil((double) (coords.x - cellSize.x / 2.0f - figuresOffset.x) / cellSize.x);
         int y = (int) Math.ceil((double) (coords.z - cellSize.y / 2.0f - figuresOffset.z) / cellSize.y);
 
@@ -222,9 +252,18 @@ public class Board {
             setFigure(selectedFigure.getPositionX(), selectedFigure.getPositionY(), null);
             setFigure(x, y, selectedFigure);
             selectedFigure = null;
+
+            if (currentTerm == Figure.Color.BLACK) {
+                currentTerm = Figure.Color.WHITE;
+            }
+            else {
+                currentTerm = Figure.Color.BLACK;
+            }
         }
         else {
-            selectedFigure = clickedFigure;
+            if (clickedFigure == null || clickedFigure.getColor() == currentTerm) {
+                selectedFigure = clickedFigure;
+            }
         }
 
         updateField();

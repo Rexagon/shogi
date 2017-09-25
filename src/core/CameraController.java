@@ -1,5 +1,6 @@
 package core;
 
+import game.Figure;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
@@ -15,7 +16,6 @@ public class CameraController {
      */
     public static void init() {
         mainCamera.setPosition(origin.x, origin.y, origin.z + distance);
-        rotateCamera(-1.0f, 0);
     }
 
     /**
@@ -130,5 +130,16 @@ public class CameraController {
 
         mainCamera.rotate(0, rotationY, 0);
         mainCamera.rotate(rotationX, 0, 0);
+    }
+
+    public static void resetCamera(Figure.Color color) {
+        mainCamera.setPosition(origin.x, origin.y, origin.z + distance);
+        CameraController.getMainCamera().setRotation(0, 0, 0);
+        if (color == Figure.Color.BLACK) {
+            CameraController.rotateCamera(-1.0f, 0.0f);
+        }
+        else {
+            CameraController.rotateCamera(-1.0f, (float)Math.PI);
+        }
     }
 }

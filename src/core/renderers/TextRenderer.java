@@ -1,5 +1,6 @@
 package core.renderers;
 
+import core.resources.Font;
 import core.resources.Shader;
 import gui.Text;
 import org.lwjgl.opengl.Display;
@@ -8,6 +9,7 @@ import org.lwjgl.opengl.GL11;
 import java.io.IOException;
 
 public class TextRenderer {
+    private static Font font = new Font();
     private static Shader shader = new Shader();
 
     /**
@@ -17,7 +19,9 @@ public class TextRenderer {
      * @throws IOException
      */
     public static void init() throws IOException {
-        shader.loadFromFile("quad.vert", "text.frag");
+        font.loadFromFile("font.fnt");
+
+        shader.loadFromFile("text.vert", "text.frag");
         shader.setAttribute(0, "vPosition");
         shader.setAttribute(1, "vTextureCoords");
 
@@ -31,6 +35,7 @@ public class TextRenderer {
      * Clears up text renderer
      */
     public static void close() {
+        font.close();
         shader.close();
     }
 
@@ -40,8 +45,11 @@ public class TextRenderer {
      * @param text text to draw
      */
     public static void draw(Text text) {
+        text.setFont(font);
+
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_CULL_FACE);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
 
         shader.bind();
         shader.setUniform("translation", text.getPosition());
@@ -53,6 +61,7 @@ public class TextRenderer {
 
         shader.unbind();
 
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL11.GL_BLEND);
     }

@@ -85,7 +85,7 @@ public class MainMenu extends Scene {
         });
         gui.addWidget(buttonExit);
 
-        labelInfo = gui.createLabel("Just a tiny coursework made by Ivan Kalinin. Version 0.8");
+        labelInfo = gui.createLabel("Just a tiny coursework made by Ivan Kalinin. Version 0.9");
         labelInfo.setTextAlign(Label.HorizontalAlign.RIGHT, Label.VerticalAlign.BOTTOM);
         labelInfo.setFontSize(12);
         gui.addWidget(labelInfo);

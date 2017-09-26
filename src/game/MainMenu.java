@@ -3,13 +3,21 @@ package game;
 import core.Scene;
 import core.SceneManager;
 import core.resources.Texture;
-import gui.Gui;
-import gui.Label;
-import gui.TextBox;
-import gui.Widget;
+import core.gui.Gui;
+import core.gui.Label;
+import core.gui.TextBox;
+import core.gui.Widget;
+import game.events.ConnectionEvent;
+import game.events.GameEvent;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class MainMenu extends Scene {
     private enum MenuState {
@@ -28,6 +36,9 @@ public class MainMenu extends Scene {
     private Label buttonExit;
     private Label labelInfo;
     private TextBox inputIP;
+    private Figure.Color selectedColor;
+
+    private ServerSocket connectionListener;
 
     @Override
     public void onInit() {
@@ -44,8 +55,7 @@ public class MainMenu extends Scene {
                 setMenuState(MenuState.HOST);
             }
             else if (menuState == MenuState.HOST) {
-                //TODO: start game as black
-                SceneManager.addScene(new Game(Figure.Color.BLACK));
+                hostGame(Figure.Color.BLACK);
             }
         });
         gui.addWidget(buttonHost);
@@ -56,11 +66,10 @@ public class MainMenu extends Scene {
                 setMenuState(MenuState.CONNECTION);
             }
             else if (menuState == MenuState.HOST) {
-                // TODO: start game as white
-                SceneManager.addScene(new Game(Figure.Color.WHITE));
+                hostGame(Figure.Color.WHITE);
             }
             else if (menuState == MenuState.CONNECTION) {
-                //TODO: connect
+                connectToHost(inputIP.getText());
             }
         });
         gui.addWidget(buttonConnect);
@@ -71,7 +80,7 @@ public class MainMenu extends Scene {
                 SceneManager.deleteScene();
             }
             else {
-                setMenuState(MenuState.MAIN);
+                resetAll();
             }
         });
         gui.addWidget(buttonExit);
@@ -92,11 +101,33 @@ public class MainMenu extends Scene {
     @Override
     public void onClose() {
         gui.close();
+        Network.close();
     }
 
     @Override
     public void onUpdate(float dt) {
         gui.update(dt);
+
+        GameEvent event;
+        while ((event = Network.popEvent()) != null) {
+            switch (event.getType()) {
+                case CONNECTION:
+                    if (connectionListener != null) {
+                        SceneManager.addScene(new Game(selectedColor));
+                    }
+                    else {
+                        SceneManager.addScene(new Game(((ConnectionEvent)event).getSelectedColor()));
+                    }
+                    break;
+
+                case EXIT:
+                    resetAll();
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
     @Override
@@ -114,6 +145,64 @@ public class MainMenu extends Scene {
 
     @Override
     public void onReturn() {
+        resetAll();
+    }
+
+    private void hostGame(Figure.Color hostColor) {
+        try {
+            setMenuState(MenuState.HOST_WAIT);
+
+            if (connectionListener != null) {
+                connectionListener.close();
+            }
+            connectionListener = new ServerSocket(7742);
+
+            selectedColor = hostColor;
+
+            new Thread(() -> {
+                try {
+                    Network.init(connectionListener.accept());
+
+                    Figure.Color oppositeColor = Figure.Color.BLACK;
+                    if (hostColor == Figure.Color.BLACK) {
+                        oppositeColor = Figure.Color.WHITE;
+                    }
+
+                    Network.send(new ConnectionEvent(oppositeColor));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void connectToHost(String host) {
+        setMenuState(MenuState.CONNECTION_WAIT);
+
+        new Thread(() -> {
+            try {
+                Network.init(new Socket(host, 7742));
+
+                Network.send(new ConnectionEvent(Figure.Color.BLACK)); // only the fact of packet send is important
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void resetAll() {
+        try {
+            if (connectionListener != null) {
+                connectionListener.close();
+                connectionListener = null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Network.close();
+        setMenuState(MenuState.MAIN);
         updateLayout();
     }
 

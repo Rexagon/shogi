@@ -1,8 +1,7 @@
-package gui;
+package core.gui;
 
 import core.Input;
 import core.KeyEvent;
-import org.lwjgl.input.Keyboard;
 
 import java.util.List;
 

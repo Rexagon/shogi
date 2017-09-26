@@ -2,7 +2,7 @@ package core.renderers;
 
 import core.resources.Font;
 import core.resources.Shader;
-import gui.Text;
+import core.gui.Text;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 

@@ -1,4 +1,4 @@
-package gui;
+package core.gui;
 
 import core.renderers.WidgetRenderer;
 import core.resources.Texture;

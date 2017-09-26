@@ -1,4 +1,4 @@
-package gui;
+package core.gui;
 
 import core.Input;
 import org.lwjgl.input.Mouse;

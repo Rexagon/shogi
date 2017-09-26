@@ -1,7 +1,7 @@
 package core.resources;
 
-import gui.FontGlyph;
-import gui.Rect;
+import core.gui.FontGlyph;
+import core.gui.Rect;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.io.BufferedReader;

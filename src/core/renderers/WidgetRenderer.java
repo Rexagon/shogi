@@ -2,7 +2,7 @@ package core.renderers;
 
 import core.resources.Mesh;
 import core.resources.Shader;
-import gui.Widget;
+import core.gui.Widget;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 

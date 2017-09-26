@@ -1,6 +1,5 @@
-package gui;
+package core.gui;
 
-import gui.Rect;
 import org.lwjgl.util.vector.Vector2f;
 
 public class FontGlyph {

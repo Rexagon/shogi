@@ -1,4 +1,4 @@
-package gui;
+package core.gui;
 
 import core.resources.Font;
 import core.resources.Mesh;

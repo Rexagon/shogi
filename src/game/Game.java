@@ -5,7 +5,10 @@ import core.renderers.MeshRenderer;
 import core.renderers.SkyboxRenderer;
 import core.renderers.TextRenderer;
 import core.resources.Mesh;
-import gui.Text;
+import core.gui.Text;
+import game.events.ExitEvent;
+import game.events.GameEvent;
+import game.events.MouseClickEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -19,6 +22,8 @@ import java.io.IOException;
 
 public class Game extends Scene {
     private Figure.Color color;
+    private Figure.Color oppositeColor;
+
     private Text text;
     private Board board;
     private Mesh table;
@@ -27,6 +32,10 @@ public class Game extends Scene {
 
     public Game(Figure.Color color) {
         this.color = color;
+        oppositeColor = Figure.Color.BLACK;
+        if (color == Figure.Color.BLACK) {
+            oppositeColor = Figure.Color.WHITE;
+        }
 
         CameraController.resetCamera(color);
     }
@@ -68,6 +77,8 @@ public class Game extends Scene {
         board.close();
         table.close();
         island.close();
+
+        Network.send(new ExitEvent(ExitEvent.ExitType.DISCONNECT));
     }
 
     @Override
@@ -97,16 +108,29 @@ public class Game extends Scene {
         Vector3f planeOrigin = new Vector3f(0, 1, 0);
 
         if (Vector3f.dot(planeNormal, ray) != 0) {
-
             float u = Vector3f.dot(planeNormal, Vector3f.sub(planeOrigin, rayOrigin, null)) /
                     Vector3f.dot(planeNormal, ray);
 
             Vector3f intersection = Vector3f.add(rayOrigin, new Vector3f(ray.x * u, ray.y * u, ray.z * u), null);
 
-            if (Input.isMouseButtonPressed("BUTTON0")) {
-                board.handleMouseClick(intersection, color);
-            }
             board.handleMouseMove(intersection);
+            if (Input.isMouseButtonPressed(0)) {
+                board.handleMouseClick(intersection, color);
+                Network.send(new MouseClickEvent(intersection));
+            }
+        }
+
+        GameEvent event;
+        while ((event = Network.popEvent()) != null) {
+            switch (event.getType()) {
+                case EXIT:
+                    SceneManager.deleteScene();
+                    break;
+
+                case MOUSE_CLICK:
+                    board.handleMouseClick(((MouseClickEvent)event).getClickCoords(), oppositeColor);
+                    break;
+            }
         }
     }
 

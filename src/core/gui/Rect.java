@@ -1,4 +1,4 @@
-package gui;
+package core.gui;
 
 import org.lwjgl.util.vector.Vector2f;
 

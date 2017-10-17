@@ -211,6 +211,10 @@ public class Figure {
         }
     }
 
+    public boolean canBeInverted() {
+        return type != Type.KING && type != Type.GOLD_GENERAL;
+    }
+
     public boolean isInverted() {
         return type == Type.ROOK_INVERTED || type == Type.BISHOP_INVERTED ||
                 type == Type.SILVER_GENERAL_INVERTED || type == Type.KNIGHT_INVERTED ||

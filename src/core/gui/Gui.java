@@ -33,7 +33,7 @@ public class Gui {
                 if (child.isVisible()) {
                     child.update(dt);
 
-                    if (child.contains(Mouse.getX(), Display.getHeight() - Mouse.getY())) {
+                    if (child.isActive() && child.contains(Mouse.getX(), Display.getHeight() - Mouse.getY())) {
                         hoveredWidget.set(child);
                     }
                 }

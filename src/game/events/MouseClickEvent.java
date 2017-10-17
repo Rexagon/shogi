@@ -3,14 +3,23 @@ package game.events;
 import org.lwjgl.util.vector.Vector3f;
 
 public class MouseClickEvent extends GameEvent {
-    private Vector3f clickCoords;
+    private int x;
+    private int y;
+    private boolean inverted;
 
-    public MouseClickEvent(Vector3f clickCoords) {
+    public MouseClickEvent(int x, int y, boolean inverted) {
         super(Type.MOUSE_CLICK);
-        this.clickCoords = clickCoords;
+        this.x = x;
+        this.y = y;
+        this.inverted = inverted;
     }
 
-    public Vector3f getClickCoords() {
-        return clickCoords;
+    public int getX() {
+        return x;
+    }
+    public int getY() { return y; }
+
+    public boolean isInverted() {
+        return inverted;
     }
 }

@@ -42,13 +42,14 @@ public class Board {
     private List<Texture> figureTextures = new ArrayList<Texture>();
     private Figure[][] field = new Figure[9][9];
     private boolean[][] possibleMoves = new boolean[9][9];
-    private List<Figure> capturedFiguresH;
-    private List<Figure> capturedFiguresL;
+    private List<Figure> capturedFiguresBlack = new ArrayList<Figure>();
+    private List<Figure> capturedFiguresWhite = new ArrayList<Figure>();
     private Figure hoveredFigure;
     private int hoveredX;
     private int hoveredY;
     private Figure selectedFigure;
     private Figure.Color currentTerm = Figure.Color.BLACK;
+    private boolean canDeselect = false;
 
     public Board() throws IOException {
         highlightShader.loadFromFile("highlight.vert", "highlight.frag");
@@ -84,7 +85,23 @@ public class Board {
         }
     }
 
+    public static Vector2f getCellSize() {
+        return cellSize;
+    }
+
+    public static Vector3f getFiguresOffset() {
+        return figuresOffset;
+    }
+
     public void initField() {
+        capturedFiguresBlack.clear();
+        capturedFiguresWhite.clear();
+        for (int i = 0; i < 9; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                field[i][j] = null;
+            }
+        }
+
         // Black figures
         setFigure(0, 8, new Figure(Figure.Type.LANCE, Figure.Color.BLACK));
         setFigure(8, 8, new Figure(Figure.Type.LANCE, Figure.Color.BLACK));
@@ -143,36 +160,24 @@ public class Board {
             for (int x = 0; x < 9; ++x) {
                 Figure figure = field[x][y];
                 if (figure != null) {
-                    prepareMesh(figure);
-
-                    if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
-                        GL11.glStencilMask(0xFF);
-                    }
-                    else {
-                        GL11.glStencilMask(0x00);
-                    }
-
-                    MeshRenderer.draw(figureMesh);
+                    drawFigure(figure);
                 }
-                else if (possibleMoves[x][y]){
-                    figure = new Figure(Figure.Type.KING, selectedFigure.getColor());
-                    figure.setPosition(x, y);
-                    prepareMesh(figure);
-
-                    highlightShader.bind();
-
-                    float alpha = 0.5f;
-                    if (x == hoveredX && y == hoveredY) {
-                        alpha = 0.8f;
-                    }
-                    highlightShader.setUniform("color", 1.0f, 1.0f, 0.0f, alpha);
-                    highlightShader.unbind();
-
-                    GL11.glEnable(GL11.GL_BLEND);
-                    MeshRenderer.draw(figureMesh, highlightShader);
-                    GL11.glDisable(GL11.GL_BLEND);
+                else if (possibleMoves[x][y]) {
+                    drawShadowFigure(x, y);
                 }
             }
+        }
+
+        for (int i = 0; i < capturedFiguresBlack.size(); ++i) {
+            Figure figure = capturedFiguresBlack.get(i);
+            figure.setPosition(i % 9, 9 + i / 9);
+            drawFigure(figure);
+        }
+
+        for (int i = 0; i < capturedFiguresWhite.size(); ++i) {
+            Figure figure = capturedFiguresWhite.get(i);
+            figure.setPosition(8 - i % 9, -1 - i / 9);
+            drawFigure(figure);
         }
 
         GL11.glStencilFunc(GL11.GL_NOTEQUAL, 1, 0xFF);
@@ -181,30 +186,26 @@ public class Board {
         for (int y = 0; y < 9; ++y) {
             for (int x = 0; x < 9; ++x) {
                 Figure figure = field[x][y];
-                if (figure != null) {
-                    if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
-                        prepareMesh(figure);
-                        highlightShader.bind();
-
-                        if (figure == hoveredFigure) {
-                            highlightShader.setUniform("color", 0.0f, 1.0f, 0.0f, 0.4f);
-                        }
-                        else if (figure == selectedFigure) {
-                            highlightShader.setUniform("color", 0.3f, 1.0f, 0.0f, 1.0f);
-                        }
-                        else if (figure.isHighlighted()) {
-                            highlightShader.setUniform("color", 1.0f, 0.2f, 0.0f, 0.4f);
-                        }
-
-                        highlightShader.unbind();
-
-                        GL11.glEnable(GL11.GL_BLEND);
-                        GL11.glDepthMask(false);
-                        MeshRenderer.draw(figureMesh, highlightShader);
-                        GL11.glDepthMask(true);
-                        GL11.glDisable(GL11.GL_BLEND);
-                    }
+                if (figure != null && (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted())) {
+                    drawFigureHighlight(figure);
                 }
+            }
+        }
+
+        for (int i = 0; i < capturedFiguresBlack.size(); ++i) {
+            Figure figure = capturedFiguresBlack.get(i);
+            figure.setPosition(i % 9, 9);
+            if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
+                drawFigureHighlight(figure);
+            }
+        }
+
+        for (int i = 0; i < capturedFiguresWhite.size(); ++i) {
+            Figure figure = capturedFiguresWhite.get(i);
+            figure.setPosition(8 - i % 9, -1);
+            drawFigure(figure);
+            if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
+                drawFigureHighlight(figure);
             }
         }
 
@@ -226,47 +227,153 @@ public class Board {
         if (isPositionValid(x, y)) {
             return field[x][y];
         }
+        else if (x >= 0 && x <= 8 && y < 0) {
+            int i = (8 - x) * (-y - 1) + 8 - x;
+            if (i < capturedFiguresWhite.size()) {
+                return capturedFiguresWhite.get(i);
+            }
+            else {
+                return null;
+            }
+        }
+        else if (x >= 0 && x <= 8 && y > 8) {
+            int i = x * (y - 9) + x;
+            if (i < capturedFiguresBlack.size()) {
+                return capturedFiguresBlack.get(i);
+            }
+            else {
+                return null;
+            }
+        }
         else {
             return null;
         }
     }
 
-    public void handleMouseMove(Vector3f coords) {
-        int x = 8 - (int)Math.ceil((double)(coords.x - cellSize.x / 2.0f - figuresOffset.x) / cellSize.x);
-        int y = (int)Math.ceil((double)(coords.z - cellSize.y / 2.0f - figuresOffset.z) / cellSize.y);
+    public Figure getSelectedFigure() {
+        return selectedFigure;
+    }
 
+    public void handleMouseMove(int x, int y) {
         hoveredFigure = getFigure(x, y);
         hoveredX = x;
         hoveredY = y;
     }
 
-    public void handleMouseClick(Vector3f coords, Figure.Color color) {
+    public void handleMouseClick(int x, int y, Figure.Color color) {
         if (currentTerm != color) return;
-
-        int x = 8 - (int) Math.ceil((double) (coords.x - cellSize.x / 2.0f - figuresOffset.x) / cellSize.x);
-        int y = (int) Math.ceil((double) (coords.z - cellSize.y / 2.0f - figuresOffset.z) / cellSize.y);
 
         Figure clickedFigure = getFigure(x, y);
 
-        if (selectedFigure != null && isPositionValid(x, y) && possibleMoves[x][y]) {
+        if (selectedFigure != null &&
+                isPositionValid(selectedFigure.getPositionX(), selectedFigure.getPositionY()) &&
+                isPositionValid(x, y) && possibleMoves[x][y])
+        {
+            Figure targetFigure = getFigure(x, y);
+
             setFigure(selectedFigure.getPositionX(), selectedFigure.getPositionY(), null);
+
             setFigure(x, y, selectedFigure);
-            selectedFigure = null;
 
             if (currentTerm == Figure.Color.BLACK) {
+                if (targetFigure != null) {
+                    capturedFiguresBlack.add(targetFigure);
+                    targetFigure.setColor(currentTerm);
+                    targetFigure.setHighlighted(false);
+                }
+
                 currentTerm = Figure.Color.WHITE;
             }
             else {
+                if (targetFigure != null) {
+                    capturedFiguresWhite.add(targetFigure);
+                    targetFigure.setColor(currentTerm);
+                    targetFigure.setHighlighted(false);
+                }
+
                 currentTerm = Figure.Color.BLACK;
             }
+
+            canDeselect = true;
+        }
+        else if (selectedFigure != null &&
+                getFigure(selectedFigure.getPositionX(), selectedFigure.getPositionY()) == selectedFigure &&
+                isPositionValid(x, y) && possibleMoves[x][y])
+        {
+            Figure targetFigure = getFigure(x, y);
+
+            setFigure(x, y, selectedFigure);
+
+            if (currentTerm == Figure.Color.BLACK) {
+                for (int i = 0; i < capturedFiguresBlack.size(); ++i) {
+                    if (capturedFiguresBlack.get(i) == selectedFigure) {
+                        capturedFiguresBlack.remove(i);
+                        break;
+                    }
+                }
+
+                if (targetFigure != null) {
+                    capturedFiguresBlack.add(targetFigure);
+                    targetFigure.setColor(currentTerm);
+                    targetFigure.setHighlighted(false);
+                    if (targetFigure.isInverted()) {
+                        targetFigure.invert();
+                    }
+                }
+
+                currentTerm = Figure.Color.WHITE;
+            }
+            else {
+                for (int i = 0; i < capturedFiguresWhite.size(); ++i) {
+                    if (capturedFiguresWhite.get(i) == selectedFigure) {
+                        capturedFiguresWhite.remove(i);
+                        break;
+                    }
+                }
+
+                if (targetFigure != null) {
+                    capturedFiguresWhite.add(targetFigure);
+                    targetFigure.setColor(currentTerm);
+                    targetFigure.setHighlighted(false);
+                    if (targetFigure.isInverted()) {
+                        targetFigure.invert();
+                    }
+                }
+
+                currentTerm = Figure.Color.BLACK;
+            }
+
+            canDeselect = true;
         }
         else {
             if (clickedFigure == null || clickedFigure.getColor() == currentTerm) {
                 selectedFigure = clickedFigure;
             }
         }
+    }
 
-        updateField();
+    public boolean canBeInverted(Figure.Color color, Figure figure) {
+        if (figure != null && canDeselect && figure.getColor() == color && figure.canBeInverted()) {
+            int y = figure.getPositionY();
+
+            if ((figure.getColor() == Figure.Color.WHITE && y >= 6 && y <= 8) ||
+                    (figure.getColor() == Figure.Color.BLACK && y >= 0 && y <= 2))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void invertFigure(Figure.Color color, Figure figure) {
+        if (canBeInverted(color, figure)) {
+            figure.invert();
+        }
+    }
+
+    public Figure.Color getCurrentTerm() {
+        return currentTerm;
     }
 
     private void prepareMesh(Figure figure) {
@@ -283,6 +390,18 @@ public class Board {
         position.x += (8 - figure.getPositionX()) * cellSize.x;
         position.z += figure.getPositionY() * cellSize.y;
 
+        if (!isPositionValid(figure.getPositionX(), figure.getPositionY())) {
+            position.y = 0.0f;
+            position.z *= 1.1f;
+        }
+        else {
+            position.y = figuresOffset.y;
+        }
+
+        if (figure.isInverted()) {
+            position.y += 0.3f;
+        }
+
         figureMesh.setRotation(0, yRotation, zRotation);
         figureMesh.setPosition(position);
 
@@ -294,7 +413,12 @@ public class Board {
         }
     }
 
-    private void updateField() {
+    public void endTurn() {
+        if (canDeselect) {
+            selectedFigure = null;
+            canDeselect = false;
+        }
+
         for (int x = 0; x < 9; ++x) {
             for (int y = 0; y < 9; ++y) {
                 Figure figure = getFigure(x, y);
@@ -305,7 +429,7 @@ public class Board {
             }
         }
 
-        if (selectedFigure != null) {
+        if (selectedFigure != null && isPositionValid(selectedFigure.getPositionX(), selectedFigure.getPositionY())) {
             Movement[] movements = selectedFigure.getPossibleMoves();
 
             int sign = selectedFigure.getColor() == Figure.Color.BLACK ? -1 : 1;
@@ -336,9 +460,119 @@ public class Board {
                 }
             }
         }
+        else if (selectedFigure != null) {
+            Movement[] movements = selectedFigure.getPossibleMoves();
+
+            for (int x = 0; x < 9; ++x) {
+                for (int y = 0; y < 9; ++y) {
+                    if (field[x][y] == null) {
+                        possibleMoves[x][y] = true;
+                    }
+                }
+            }
+
+            int sign = selectedFigure.getColor() == Figure.Color.BLACK ? -1 : 1;
+
+            for (int x = 0; x < 9; ++x) {
+                for (int y = 0; y < 9; ++y) {
+                    if (!possibleMoves[x][y]) {
+                        continue;
+                    }
+
+                    boolean canMove = false;
+                    for (Movement movement : movements) {
+                        int mX = x + sign * movement.directionX;
+                        int mY = y + sign * movement.directionY;
+
+                        while (isPositionValid(mX, mY) && !canMove) {
+                            Figure figure = getFigure(mX, mY);
+
+                            if (figure != null) {
+                                if (figure.getColor() != selectedFigure.getColor()) {
+                                    figure.setHighlighted(true);
+                                    canMove = true;
+                                }
+                                break;
+                            }
+
+                            canMove = true;
+
+                            if (movement.finite) {
+                                break;
+                            }
+
+                            mX += sign * movement.directionX;
+                            mY += sign * movement.directionY;
+                        }
+
+                        if (canMove) break;
+                    }
+
+                    if (!canMove) {
+                        possibleMoves[x][y] = false;
+                    }
+                }
+            }
+        }
     }
 
-    static boolean isPositionValid(int x, int y) {
+    private void drawFigure(Figure figure) {
+        prepareMesh(figure);
+
+        if (figure == hoveredFigure || figure == selectedFigure || figure.isHighlighted()) {
+            GL11.glStencilMask(0xFF);
+        }
+        else {
+            GL11.glStencilMask(0x00);
+        }
+
+        MeshRenderer.draw(figureMesh);
+    }
+
+    private void drawShadowFigure(int x, int y) {
+        if (selectedFigure == null) return;
+        Figure figure = new Figure(Figure.Type.KING, selectedFigure.getColor());
+        figure.setPosition(x, y);
+        prepareMesh(figure);
+
+        highlightShader.bind();
+
+        float alpha = 0.5f;
+        if (x == hoveredX && y == hoveredY) {
+            alpha = 0.8f;
+        }
+        highlightShader.setUniform("color", 1.0f, 1.0f, 0.0f, alpha);
+        highlightShader.unbind();
+
+        GL11.glEnable(GL11.GL_BLEND);
+        MeshRenderer.draw(figureMesh, highlightShader);
+        GL11.glDisable(GL11.GL_BLEND);
+    }
+
+    private void drawFigureHighlight(Figure figure) {
+        prepareMesh(figure);
+        highlightShader.bind();
+
+        if (figure == hoveredFigure) {
+            highlightShader.setUniform("color", 0.0f, 1.0f, 0.0f, 0.4f);
+        }
+        else if (figure == selectedFigure) {
+            highlightShader.setUniform("color", 0.3f, 1.0f, 0.0f, 1.0f);
+        }
+        else if (figure.isHighlighted()) {
+            highlightShader.setUniform("color", 1.0f, 0.2f, 0.0f, 0.4f);
+        }
+
+        highlightShader.unbind();
+
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glDepthMask(false);
+        MeshRenderer.draw(figureMesh, highlightShader);
+        GL11.glDepthMask(true);
+        GL11.glDisable(GL11.GL_BLEND);
+    }
+
+    public static boolean isPositionValid(int x, int y) {
         return x >= 0 && x <= 8 && y >= 0 && y <= 8;
     }
 }

@@ -8,7 +8,6 @@ public class GameEvent implements Serializable {
         EXIT,
 
         MOUSE_CLICK,
-        INVERT_FIGURE
     }
     private Type type;
 

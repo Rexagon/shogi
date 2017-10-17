@@ -35,6 +35,7 @@ public class Widget extends Rect {
     private boolean pressed = false;
     private boolean focused = false;
     protected boolean visible = true;
+    protected boolean active = true;
 
     public Widget() {
         id = CURRENT_ID++;
@@ -177,5 +178,13 @@ public class Widget extends Rect {
 
     public boolean isVisible() {
         return visible;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 }
